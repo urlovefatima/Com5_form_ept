@@ -1,0 +1,45 @@
+@import "tailwindcss";
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/manrope";
+
+@theme {
+  --font-display: "Fraunces Variable", Georgia, serif;
+  --font-sans: "Manrope Variable", system-ui, sans-serif;
+  --color-navy-950: #061629;
+  --color-navy-900: #0B2545;
+  --color-navy-800: #12325C;
+  --color-navy-700: #1D4E89;
+  --color-navy-500: #3D6FB0;
+  --color-sky-50: #F5F9FE;
+  --color-sky-100: #EAF2FB;
+  --color-sky-200: #D6E5F6;
+  --color-sky-300: #8DB3E2;
+  --color-gold-300: #F3D27A;
+  --color-gold-400: #E2B54F;
+  --color-gold-500: #C9A227;
+  --color-gold-600: #A8831C;
+  --color-ink: #13213A;
+  --color-muted: #5B6B82;
+}
+
+html { scroll-behavior: smooth; }
+body { @apply bg-sky-50 text-ink font-sans antialiased; }
+::selection { background: var(--color-gold-300); color: var(--color-navy-900); }
+
+@utility container-x { @apply mx-auto w-full max-w-6xl px-5 sm:px-8; }
+@utility eyebrow { @apply text-[11px] font-bold uppercase tracking-[0.22em]; }
+@utility btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60; }
+@utility btn-gold { @apply btn bg-gold-400 text-navy-950 shadow-[0_10px_30px_-10px_rgba(226,181,79,.7)] hover:bg-gold-300 hover:-translate-y-0.5 focus-visible:ring-gold-300/50; }
+@utility btn-navy { @apply btn bg-navy-900 text-white hover:bg-navy-800 hover:-translate-y-0.5 focus-visible:ring-navy-500/30; }
+@utility btn-ghost { @apply btn border border-navy-900/15 bg-white text-navy-900 hover:border-navy-900/40 focus-visible:ring-navy-500/20; }
+@utility btn-ghost-dark { @apply btn border border-white/25 text-white hover:bg-white/10 focus-visible:ring-white/20; }
+@utility card { @apply rounded-3xl border border-navy-900/[0.07] bg-white shadow-[0_1px_2px_rgba(11,37,69,.04),0_12px_40px_-18px_rgba(11,37,69,.18)]; }
+@utility label { @apply mb-1.5 block text-sm font-semibold text-navy-900; }
+@utility hint { @apply mt-1 text-xs text-muted; }
+@utility input { @apply w-full rounded-2xl border border-navy-900/12 bg-sky-50/60 px-4 py-3 text-[15px] text-ink placeholder:text-muted/60 transition focus:border-navy-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-navy-500/10; }
+@utility input-error { @apply border-red-400 focus:border-red-500 focus:ring-red-500/10; }
+@utility chip { @apply rounded-full border px-4 py-2 text-left text-[13px] font-medium transition-all duration-200; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

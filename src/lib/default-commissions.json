@@ -1,0 +1,147 @@
+[
+  {
+    "slug": "pedagogique",
+    "sortOrder": 1,
+    "name": "Commission pédagogique",
+    "shortName": "Pédagogique",
+    "tagline": "Apprendre mieux, ensemble.",
+    "description": "Fait le lien entre la promotion, les enseignants et la direction des études : suivi des enseignements, accompagnement des projets de fin d'études, préparation des soutenances, visites d'entreprises et accès aux ressources pédagogiques.",
+    "image": "/images/pedagogique.jpg",
+    "imageAlt": "Séance de travaux pratiques en laboratoire avec un enseignant",
+    "categories": [
+      { "id": "formations", "label": "Formations et renforcement de compétences" },
+      { "id": "ateliers", "label": "Ateliers pratiques et séminaires" },
+      { "id": "pfe", "label": "Accompagnement des PFE" },
+      { "id": "soutenances", "label": "Préparation aux soutenances" },
+      { "id": "visites", "label": "Visites d'entreprises et sorties pédagogiques" },
+      { "id": "certifications", "label": "Certifications et formations linguistiques" },
+      { "id": "ressources", "label": "Ressources pédagogiques" },
+      { "id": "autres", "label": "Autres suggestions" }
+    ],
+    "extraFields": [
+      { "key": "public_cible", "label": "Public cible", "placeholder": "Toute la promotion, un génie en particulier, les étudiants en PFE…", "type": "text" }
+    ]
+  },
+  {
+    "slug": "insertion",
+    "sortOrder": 2,
+    "name": "Commission insertion",
+    "shortName": "Insertion",
+    "tagline": "De l'EPT au monde professionnel.",
+    "description": "Prépare l'après-EPT : recherche de stages et d'emplois, relations avec les entreprises et les anciens, ateliers CV et entretiens, entrepreneuriat, bourses et poursuite d'études à l'étranger.",
+    "image": "/images/insertion.jpg",
+    "imageAlt": "Élève ingénieur en tenue de cérémonie de l'EPT",
+    "categories": [
+      { "id": "stages-emplois", "label": "Recherche de stages et d'emplois" },
+      { "id": "opportunites", "label": "Opportunités professionnelles" },
+      { "id": "entretiens", "label": "Préparation aux entretiens" },
+      { "id": "cv", "label": "Rédaction de CV et lettres de motivation" },
+      { "id": "reseautage", "label": "Réseautage et rencontres avec les entreprises" },
+      { "id": "entrepreneuriat", "label": "Entrepreneuriat" },
+      { "id": "bourses", "label": "Bourses et études à l'étranger" },
+      { "id": "mentorat", "label": "Mentorat et accompagnement professionnel" },
+      { "id": "autres", "label": "Autres suggestions" }
+    ],
+    "extraFields": [
+      { "key": "public_cible", "label": "Profils concernés", "placeholder": "Futurs salariés, entrepreneurs, candidats à un master…", "type": "text" },
+      { "key": "partenaires", "label": "Partenaires ou intervenants possibles", "placeholder": "Entreprises, anciens, cabinets, ambassades, associations…", "type": "text" }
+    ]
+  },
+  {
+    "slug": "permis",
+    "sortOrder": 3,
+    "name": "Commission permis de conduire",
+    "shortName": "Permis de conduire",
+    "tagline": "Repartir de l'EPT avec son permis.",
+    "description": "Organise le programme de permis de conduire de la promotion : cours de code et de conduite, relations avec les auto-écoles, paiements et subventions, calendrier et passage des examens.",
+    "image": "/images/permis.svg",
+    "imageAlt": "Illustration d'une route et d'un volant",
+    "categories": [
+      { "id": "code", "label": "Organisation des cours de code" },
+      { "id": "conduite", "label": "Organisation des cours de conduite" },
+      { "id": "paiement", "label": "Modalités de paiement" },
+      { "id": "subventions", "label": "Gestion des subventions" },
+      { "id": "auto-ecoles", "label": "Relations avec les auto-écoles" },
+      { "id": "examens", "label": "Organisation des examens" },
+      { "id": "calendrier", "label": "Gestion du calendrier" },
+      { "id": "accompagnement", "label": "Amélioration de l'accompagnement" },
+      { "id": "autres", "label": "Autres suggestions" }
+    ],
+    "extraFields": [
+      { "key": "situation", "label": "Difficulté constatée", "placeholder": "Qu'est-ce qui pose problème aujourd'hui ? (horaires, coûts, déplacements…)", "type": "textarea" }
+    ]
+  },
+  {
+    "slug": "sociale",
+    "sortOrder": 4,
+    "name": "Commission sociale",
+    "shortName": "Sociale",
+    "tagline": "Des souvenirs qu'on garde pour la vie.",
+    "description": "Fait vivre la promotion : cohésion, sorties, soirées et célébrations, activités créatives, liens avec les filleuls et les promotions cadettes, actions solidaires et bien-être de chacun.",
+    "image": "/images/sociale.jpg",
+    "imageAlt": "Étudiants de la promotion réunis et souriants après une remise de diplômes",
+    "categories": [
+      { "id": "cohesion", "label": "Cohésion et team building" },
+      { "id": "sorties", "label": "Sorties et moments de détente" },
+      { "id": "soirees", "label": "Soirées à thème et événements" },
+      { "id": "artistique", "label": "Activités artistiques et créatives" },
+      { "id": "filleuls", "label": "Activités avec les filleuls et promotions cadettes" },
+      { "id": "solidarite", "label": "Actions sociales et solidaires" },
+      { "id": "bien-etre", "label": "Bien-être et accompagnement" },
+      { "id": "celebrations", "label": "Anniversaires et célébrations" },
+      { "id": "relations", "label": "Renforcer les liens entre étudiants" },
+      { "id": "autres", "label": "Autres idées originales" }
+    ],
+    "extraFields": [
+      { "key": "originalite", "label": "Ce qui rend l'idée unique", "placeholder": "Pourquoi la promo s'en souviendra-t-elle ?", "type": "textarea" },
+      { "key": "format", "label": "Format envisagé", "placeholder": "Lieu, durée, nombre de participants, intérieur / extérieur…", "type": "text" }
+    ]
+  },
+  {
+    "slug": "finance",
+    "sortOrder": 5,
+    "name": "Commission finance",
+    "shortName": "Finance",
+    "tagline": "Des ressources bien gérées, en toute transparence.",
+    "description": "Gère les ressources de la promotion : cotisations, caisse commune, recherche de sponsors et de partenaires, suivi des dépenses, solidarité financière et transparence des comptes.",
+    "image": "/images/finance.svg",
+    "imageAlt": "Illustration de pièces et d'un graphique de croissance",
+    "categories": [
+      { "id": "cotisations", "label": "Cotisations et contributions" },
+      { "id": "caisse", "label": "Gestion de la caisse commune" },
+      { "id": "sponsors", "label": "Recherche de sponsors et partenaires" },
+      { "id": "ressources", "label": "Mobilisation de ressources" },
+      { "id": "transparence", "label": "Transparence financière" },
+      { "id": "depenses", "label": "Gestion des dépenses" },
+      { "id": "soutien", "label": "Soutien financier aux étudiants" },
+      { "id": "budget", "label": "Optimisation du budget des activités" },
+      { "id": "autres", "label": "Autres propositions" }
+    ],
+    "extraFields": [
+      { "key": "impact", "label": "Impact financier attendu", "placeholder": "Économies, recettes supplémentaires, meilleure traçabilité…", "type": "text" }
+    ]
+  },
+  {
+    "slug": "coordination",
+    "sortOrder": 6,
+    "name": "Coordination",
+    "shortName": "Coordination",
+    "tagline": "Coordonnateur & Vice-coordonnatrice",
+    "description": "Pilote la COM5 dans son ensemble : fonctionnement des commissions, communication avec la promotion, dialogue avec l'administration, relations avec les anciens et les partenaires, organisation de la dernière année.",
+    "image": "/images/coordination.jpg",
+    "imageAlt": "Groupe d'élèves ingénieurs de l'EPT en uniforme",
+    "categories": [
+      { "id": "fonctionnement", "label": "Fonctionnement général de la COM5" },
+      { "id": "communication", "label": "Communication avec la promotion" },
+      { "id": "inter-commissions", "label": "Coordination entre les commissions" },
+      { "id": "administration", "label": "Collaboration avec l'administration" },
+      { "id": "anciens", "label": "Relations avec les anciens et partenaires" },
+      { "id": "organisation", "label": "Organisation générale de la dernière année" },
+      { "id": "participation", "label": "Participation des étudiants" },
+      { "id": "autres", "label": "Autres recommandations" }
+    ],
+    "extraFields": [
+      { "key": "acteurs", "label": "Acteurs concernés", "placeholder": "Commissions, administration, anciens, délégués…", "type": "text" }
+    ]
+  }
+]

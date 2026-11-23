@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-label="Route, voiture et volant">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B2545"/><stop offset=".62" stop-color="#1D4E89"/><stop offset="1" stop-color="#8DB3E2"/></linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26364F"/><stop offset="1" stop-color="#101B2D"/></linearGradient>
+    <radialGradient id="sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#F3D27A"/><stop offset=".6" stop-color="#E2B54F" stop-opacity=".55"/><stop offset="1" stop-color="#E2B54F" stop-opacity="0"/></radialGradient>
+    <linearGradient id="car" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#D9E6F5"/></linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#sky)"/>
+  <circle cx="820" cy="430" r="230" fill="url(#sun)"/>
+  <circle cx="820" cy="430" r="78" fill="#F3D27A"/>
+  <!-- collines / baobabs -->
+  <rect y="500" width="1200" height="400" fill="#2B5A8F"/>
+  <path d="M0 470 C180 420 320 450 470 440 C640 428 760 470 900 455 C1030 442 1120 450 1200 445 V900 H0Z" fill="#1F4A7C"/>
+  <g fill="#0E2A4D">
+    <path d="M150 455 v-60 q-4-10 6-12 q-30-8-36-24 q22 8 34 2 q-14-18-10-36 q14 20 26 22 q4-20 22-26 q-6 22 0 34 q16-8 34-4 q-18 12-24 26 q14 4 22 18 q-22-4-34 2 l-4 58z"/>
+    <path d="M1010 452 v-46 q-3-8 5-9 q-24-6-28-18 q17 6 26 1 q-11-14-8-28 q11 16 20 17 q3-16 17-20 q-5 17 0 26 q12-6 26-3 q-14 9-18 20 q11 3 17 14 q-17-3-26 2 l-3 44z"/>
+  </g>
+  <!-- route en perspective -->
+  <path d="M520 470 L680 470 L1120 900 L80 900 Z" fill="url(#road)"/>
+  <path d="M520 470 L80 900" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="6"/>
+  <path d="M680 470 L1120 900" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="6"/>
+  <g fill="#E2B54F">
+    <path d="M596 490 h8 l3 34 h-14z"/><path d="M592 560 h16 l5 56 h-26z"/><path d="M586 660 h28 l8 90 h-44z"/><path d="M576 800 h48 l10 100 h-68z"/>
+  </g>
+  <!-- voiture -->
+  <g transform="translate(250 640)">
+    <ellipse cx="170" cy="168" rx="190" ry="20" fill="#000" opacity=".28"/>
+    <path d="M20 110 q0-34 34-42 l46-10 l48-46 q12-12 30-12 h104 q20 0 32 14 l40 44 l46 10 q30 8 30 40 v36 q0 14-14 14 H34 q-14 0-14-14z" fill="url(#car)"/>
+    <path d="M118 58 l38-38 q8-8 20-8 h40 v46z M232 12 h42 q14 0 22 10 l30 36 h-94z" fill="#1D4E89" opacity=".85"/>
+    <rect x="22" y="104" width="34" height="14" rx="6" fill="#F3D27A"/><rect x="330" y="104" width="30" height="14" rx="6" fill="#E46A5E"/>
+    <circle cx="96" cy="160" r="34" fill="#0B2545"/><circle cx="96" cy="160" r="15" fill="#C9D6E8"/>
+    <circle cx="290" cy="160" r="34" fill="#0B2545"/><circle cx="290" cy="160" r="15" fill="#C9D6E8"/>
+    <!-- plaque L (apprenti) -->
+    <rect x="166" y="82" width="38" height="38" rx="6" fill="#FFFFFF" stroke="#0B2545" stroke-width="3"/>
+    <path d="M178 90 v22 h16" stroke="#C0392B" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- volant -->
+  <g transform="translate(965 690)" fill="none" stroke="#FFFFFF" stroke-linecap="round">
+    <circle r="128" stroke-width="26" stroke-opacity=".95"/>
+    <circle r="38" fill="#FFFFFF" stroke="none"/>
+    <circle r="16" fill="#E2B54F" stroke="none"/>
+    <path d="M-118 -10 Q-60 -30 -36 -6 M118 -10 Q60 -30 36 -6 M0 40 V118" stroke-width="22"/>
+  </g>
+  <!-- panneau -->
+  <g transform="translate(420 300)">
+    <rect x="-5" y="40" width="10" height="150" fill="#C9D6E8"/>
+    <circle r="52" fill="#FFFFFF"/><circle r="44" fill="none" stroke="#C0392B" stroke-width="12"/>
+    <text y="16" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="44" fill="#0B2545">50</text>
+  </g>
+</svg>
