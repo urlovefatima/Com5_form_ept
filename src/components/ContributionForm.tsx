@@ -3,160 +3,85 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowLeft, ArrowRight, Check, ChevronDown, CircleAlert, Copy, EyeOff, Loader2, NotebookPen, Plus, RotateCcw, Send, Trash2, UserRound,
-} from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, ChevronDown, CircleAlert, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import type { Commission } from "@/lib/types";
 
-type Budget = "unspecified" | "none" | "unknown" | "amount";
-type Proposal = {
-  uid: string;
-  categoryId: string;
-  title: string;
-  description: string;
-  objective: string;
-  organization: string;
-  budgetType: Budget;
-  budgetAmount: string;
-  period: string;
-  inclusion: string;
-  specialNote: string;
-  extra: Record<string, string>;
-};
-type Identity = { anonymous: boolean; fullName: string; department: string };
-type Errors = Record<string, string>;
-
-const STEPS = ["Toi", "Tes idées", "Relecture"] as const;
-const PERIODS = ["Dès que possible", "Avant les PFE", "Pendant les PFE", "Après les soutenances", "Toute l'année"];
+type Proposal = { uid: string; categoryId: string; title: string; description: string; specialNote: string };
+type Errors = Partial<Record<"categoryId" | "title" | "description", string>>;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
-const emptyProposal = (): Proposal => ({
-  uid: uid(), categoryId: "", title: "", description: "", objective: "", organization: "",
-  budgetType: "unspecified", budgetAmount: "", period: "", inclusion: "", specialNote: "", extra: {},
-});
+const emptyProposal = (): Proposal => ({ uid: uid(), categoryId: "", title: "", description: "", specialNote: "" });
 
-function validateProposal(p: Proposal): Errors {
+function validate(p: Proposal): Errors {
   const e: Errors = {};
-  if (!p.categoryId) e.categoryId = "Choisis une catégorie pour ton idée.";
-  if (p.title.trim().length < 3) e.title = "Donne un titre à ta proposition (3 caractères min.).";
-  if (p.description.trim().length < 10) e.description = "Décris ton idée en quelques phrases (10 caractères min.).";
-  if (p.budgetType === "amount" && !p.budgetAmount.trim()) e.budgetAmount = "Indique un montant ou choisis une autre option.";
+  if (!p.categoryId) e.categoryId = "Choisis un thème.";
+  if (p.title.trim().length < 3) e.title = "Donne un titre à ton idée (3 caractères min.).";
+  if (p.description.trim().length < 10) e.description = "Décris ton idée en quelques mots (10 caractères min.).";
   return e;
 }
 
 export default function ContributionForm({
   commission, departments, others,
 }: { commission: Commission; departments: string[]; others: { slug: string; shortName: string }[] }) {
-  const storageKey = `com5:draft:${commission.slug}`;
-  const [step, setStep] = useState(0);
-  const [identity, setIdentity] = useState<Identity>({ anonymous: false, fullName: "", department: "" });
+  const storageKey = `com5:draft2:${commission.slug}`;
   const [proposals, setProposals] = useState<Proposal[]>([emptyProposal()]);
-  const [open, setOpen] = useState(0);
+  const [active, setActive] = useState(0);
   const [errors, setErrors] = useState<Record<string, Errors>>({});
-  const [identityError, setIdentityError] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [department, setDepartment] = useState("");
+  const [website, setWebsite] = useState(""); // champ piège anti-robots
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [serverError, setServerError] = useState("");
-  const [restored, setRestored] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [website, setWebsite] = useState(""); // honeypot
+  const [sent, setSent] = useState(0);
   const startedAt = useRef(Date.now());
   const topRef = useRef<HTMLDivElement>(null);
-  const [sentCount, setSentCount] = useState(0);
+  const labels = useMemo(() => new Map(commission.categories.map((c) => [c.id, c.label])), [commission.categories]);
 
-  const categoryLabel = useMemo(() => new Map(commission.categories.map((c) => [c.id, c.label])), [commission.categories]);
-
-  // Restauration du brouillon (confort uniquement : la vraie sauvegarde se fait en base à l'envoi)
+  // Brouillon local (confort) — la vraie sauvegarde se fait en base à l'envoi.
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const d = JSON.parse(raw);
-        if (d?.proposals?.length) {
-          setIdentity({ ...identity, ...d.identity });
-          setProposals(d.proposals.map((p: Proposal) => ({ ...emptyProposal(), ...p })));
-          if (typeof d.step === "number") setStep(Math.min(d.step, 1));
-          setRestored(true);
-        }
+      const d = JSON.parse(localStorage.getItem(storageKey) || "null");
+      if (d?.proposals?.length) {
+        setProposals(d.proposals.map((p: Proposal) => ({ ...emptyProposal(), ...p })));
+        setActive(Math.min(d.active ?? 0, d.proposals.length - 1));
+        setFullName(d.fullName ?? ""); setDepartment(d.department ?? "");
       }
-    } catch { /* stockage indisponible : on continue sans brouillon */ }
+    } catch {}
     setLoaded(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  }, [storageKey]);
   useEffect(() => {
     if (!loaded || status === "success") return;
-    try { localStorage.setItem(storageKey, JSON.stringify({ identity, proposals, step, savedAt: Date.now() })); } catch {}
-  }, [identity, proposals, step, loaded, status, storageKey]);
-
-  const scrollTop = () => topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    try { localStorage.setItem(storageKey, JSON.stringify({ proposals, active, fullName, department })); } catch {}
+  }, [proposals, active, fullName, department, loaded, status, storageKey]);
 
   const update = (i: number, patch: Partial<Proposal>) => {
     setProposals((ps) => ps.map((p, j) => (j === i ? { ...p, ...patch } : p)));
-    if (errors[proposals[i]?.uid]) {
-      const keys = Object.keys(patch);
-      setErrors((e) => {
-        const cur = { ...(e[proposals[i].uid] || {}) };
-        keys.forEach((k) => delete cur[k]);
-        if (patch.budgetType) delete cur.budgetAmount;
-        return { ...e, [proposals[i].uid]: cur };
-      });
-    }
+    const id = proposals[i].uid;
+    if (errors[id]) setErrors((e) => { const cur = { ...e[id] }; Object.keys(patch).forEach((k) => delete cur[k as keyof Errors]); return { ...e, [id]: cur }; });
   };
 
-  const validateAll = () => {
-    const all: Record<string, Errors> = {};
-    let firstBad = -1;
-    proposals.forEach((p, i) => {
-      const e = validateProposal(p);
-      if (Object.keys(e).length) { all[p.uid] = e; if (firstBad < 0) firstBad = i; }
-    });
+  const checkAll = () => {
+    const all: Record<string, Errors> = {}; let bad = -1;
+    proposals.forEach((p, i) => { const e = validate(p); if (Object.keys(e).length) { all[p.uid] = e; if (bad < 0) bad = i; } });
     setErrors(all);
-    return firstBad;
+    if (bad >= 0) { setActive(bad); setTimeout(() => document.getElementById(`p-${proposals[bad].uid}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); }
+    return bad < 0;
   };
 
-  const goNext = () => {
-    if (step === 0) {
-      if (!identity.anonymous && identity.fullName.trim().length < 2) {
-        setIdentityError("Indique ton nom, ou choisis de contribuer anonymement.");
-        return;
-      }
-      setIdentityError("");
-      setStep(1); scrollTop(); return;
-    }
-    if (step === 1) {
-      const bad = validateAll();
-      if (bad >= 0) { setOpen(bad); setTimeout(() => document.getElementById(`p-${proposals[bad].uid}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); return; }
-      setStep(2); scrollTop();
-    }
-  };
-
-  const addProposal = () => {
-    const bad = validateAll();
-    if (bad >= 0) { setOpen(bad); return; }
+  const add = () => {
+    if (!checkAll()) return;
     setProposals((ps) => [...ps, emptyProposal()]);
-    setOpen(proposals.length);
-    setTimeout(() => window.scrollBy({ top: 200, behavior: "smooth" }), 80);
+    setActive(proposals.length);
   };
-
-  const duplicate = (i: number) => {
-    const copy = { ...proposals[i], uid: uid(), title: proposals[i].title + " (variante)" };
-    setProposals((ps) => [...ps.slice(0, i + 1), copy, ...ps.slice(i + 1)]);
-    setOpen(i + 1);
-  };
-
   const remove = (i: number) => {
     setProposals((ps) => (ps.length === 1 ? [emptyProposal()] : ps.filter((_, j) => j !== i)));
-    setOpen(Math.max(0, i - 1));
+    setActive((a) => Math.max(0, Math.min(a, proposals.length - 2)));
   };
 
-  const resetDraft = () => {
-    try { localStorage.removeItem(storageKey); } catch {}
-    setIdentity({ anonymous: false, fullName: "", department: "" });
-    setProposals([emptyProposal()]); setOpen(0); setStep(0); setErrors({}); setRestored(false);
-  };
-
-  const submit = async () => {
-    if (validateAll() >= 0) { setStep(1); return; }
+  const submit = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!checkAll()) return;
     setStatus("submitting"); setServerError("");
     try {
       const res = await fetch("/api/contributions", {
@@ -164,398 +89,214 @@ export default function ContributionForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           commissionSlug: commission.slug,
-          anonymous: identity.anonymous,
-          fullName: identity.anonymous ? "" : identity.fullName,
-          department: identity.department,
-          proposals: proposals.map(({ uid: _u, ...p }) => ({
-            ...p,
-            budgetAmount: p.budgetType === "amount" ? p.budgetAmount : "",
-            extra: Object.fromEntries(Object.entries(p.extra).filter(([, v]) => v.trim())),
-          })),
+          anonymous: fullName.trim().length < 2,
+          fullName: fullName.trim(),
+          department,
+          proposals: proposals.map((p) => ({ categoryId: p.categoryId, title: p.title, description: p.description, specialNote: p.specialNote })),
           website,
           startedAt: startedAt.current,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "L'envoi a échoué. Réessaie dans un instant.");
-      setSentCount(proposals.length);
-      setStatus("success");
+      setSent(proposals.length); setStatus("success");
       try { localStorage.removeItem(storageKey); } catch {}
-      scrollTop();
+      topRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch (err) {
-      setStatus("error");
-      setServerError(err instanceof Error ? err.message : "L'envoi a échoué.");
+      setStatus("error"); setServerError(err instanceof Error ? err.message : "L'envoi a échoué.");
     }
   };
 
-  const progress = status === "success" ? 100 : ((step + (step === 2 ? 0.5 : 0.35)) / STEPS.length) * 100;
+  const restart = () => {
+    setProposals([emptyProposal()]); setActive(0); setErrors({}); setStatus("idle"); startedAt.current = Date.now();
+  };
 
   return (
-    <main className="min-h-screen bg-sky-50">
-      {/* Bandeau commission */}
-      <section className="relative isolate overflow-hidden bg-navy-950 text-white">
-        <img src={commission.image} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-35" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-navy-950 via-navy-950/85 to-navy-900/40" />
-        <div className="container-x pb-10 pt-6 sm:pb-14">
-          <div className="flex items-center justify-between">
-            <Link href="/#commissions" className="group inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 transition hover:bg-white/10 hover:text-white">
-              <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-0.5" /> Toutes les commissions
-            </Link>
-            <Link href="/" aria-label="Accueil"><img src="/images/emblem-ept.png" alt="" className="h-8" /></Link>
+    <main ref={topRef} className="min-h-screen bg-white">
+      {/* Barre du haut */}
+      <header className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-8 sm:py-6">
+        <Link href="/#commissions" className="inline-flex items-center gap-2 rounded-full bg-sky-100 px-4 py-2 text-sm font-semibold text-navy-900 transition hover:bg-sky-200">
+          <ArrowLeft className="h-4 w-4" /> Commissions
+        </Link>
+        <span className="hidden text-sm text-muted sm:block">COM5 · <span className="font-semibold text-navy-900">Ton avis aussi compte !</span></span>
+        <Link href="/" aria-label="Accueil" className="grid h-10 w-10 place-items-center rounded-full bg-navy-950"><img src="/images/emblem-ept.png" alt="" className="h-4" /></Link>
+      </header>
+
+      <div className="mx-auto max-w-6xl px-4 pb-14 sm:px-8">
+        {/* Titre */}
+        <div className="mt-4 flex flex-col gap-4 sm:mt-8 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-navy-800">{commission.name}</span>
+            <h1 className="mt-4 text-[2.6rem] font-extrabold leading-[1] tracking-[-0.04em] text-navy-950 sm:text-6xl lg:text-7xl">
+              {status === "success" ? "Merci !" : <>Partage ton <span className="font-display font-medium italic text-navy-700">idée</span></>}
+            </h1>
           </div>
-          <p className="eyebrow mt-10 text-gold-300">COM5 · Espace de contribution</p>
-          <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">{commission.name}</h1>
-          <p className="mt-2 font-display text-lg italic text-sky-200">{commission.tagline}</p>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/65 sm:text-[15px]">{commission.description}</p>
+          <p className="line-clamp-3 max-w-sm text-[15px] leading-relaxed text-muted sm:line-clamp-none lg:text-right">{commission.description}</p>
         </div>
-      </section>
 
-      <div ref={topRef} className="scroll-mt-4" />
-
-      {/* Progression */}
-      <div className="sticky top-0 z-20 border-b border-navy-900/5 bg-sky-50/85 backdrop-blur-md">
-        <div className="container-x py-4">
-          <ol className="flex items-center gap-2 sm:gap-4">
-            {STEPS.map((s, i) => {
-              const done = status === "success" || i < step;
-              const active = status !== "success" && i === step;
-              return (
-                <li key={s} className="flex flex-1 items-center gap-2 sm:gap-3">
-                  <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold transition-all duration-500
-                    ${done ? "bg-navy-900 text-white" : active ? "bg-gold-400 text-navy-950 ring-4 ring-gold-400/25" : "bg-white text-muted ring-1 ring-navy-900/10"}`}>
-                    {done ? <Check className="h-4 w-4" /> : i + 1}
-                  </span>
-                  <span className={`hidden text-sm font-semibold sm:block ${active ? "text-navy-900" : "text-muted"}`}>{s}</span>
-                  {i < STEPS.length - 1 && <span className="h-px flex-1 bg-navy-900/10" />}
-                </li>
-              );
-            })}
-          </ol>
-          <div className="mt-3 h-1 overflow-hidden rounded-full bg-navy-900/[0.06]">
-            <motion.div className="h-full rounded-full bg-gradient-to-r from-navy-700 to-gold-400" animate={{ width: `${progress}%` }} transition={{ duration: 0.6, ease: "easeOut" }} />
-          </div>
-        </div>
-      </div>
-
-      <div className="container-x max-w-3xl py-10 sm:py-14">
-        {restored && status !== "success" && (
-          <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-navy-700/15 bg-white px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
-            <span className="flex items-center gap-2 text-navy-900"><NotebookPen className="h-4 w-4 text-gold-600" /> Ton brouillon a été restauré sur cet appareil.</span>
-            <button onClick={resetDraft} className="inline-flex items-center gap-1.5 self-start font-semibold text-muted transition hover:text-red-600"><RotateCcw className="h-3.5 w-3.5" /> Recommencer à zéro</button>
-          </div>
-        )}
-
-        <AnimatePresence mode="wait">
-          {status === "success" ? (
-            <motion.div key="success" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="card overflow-hidden text-center">
-              <div className="bg-gradient-to-b from-sky-100 to-white px-6 pb-4 pt-14">
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 14, delay: 0.15 }}
-                  className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-navy-900 text-gold-300 shadow-xl">
-                  <Check className="h-10 w-10" strokeWidth={2.5} />
+        <div className="mt-8 grid gap-4 lg:mt-12 lg:grid-cols-[1.4fr_1fr] lg:gap-5">
+          {/* Formulaire */}
+          <div className="order-2 lg:order-1">
+            <AnimatePresence mode="wait">
+              {status === "success" ? (
+                <motion.div key="ok" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-[1.75rem] bg-sky-50 p-6 sm:p-10">
+                  <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 220, damping: 14, delay: 0.1 }}
+                    className="grid h-16 w-16 place-items-center rounded-full bg-navy-900 text-gold-300"><Check className="h-8 w-8" strokeWidth={2.6} /></motion.span>
+                  <h2 className="mt-6 text-3xl font-extrabold tracking-[-0.03em] text-navy-950">C&apos;est bien reçu.</h2>
+                  <p className="mt-2 max-w-md leading-relaxed text-muted">
+                    {sent > 1 ? `Tes ${sent} idées ont été transmises` : "Ton idée a été transmise"} à la COM5 ({commission.shortName}). Merci de construire la feuille de route avec nous.
+                  </p>
+                  <p className="mt-8 text-sm font-semibold text-navy-900">Une idée pour une autre commission ?</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {others.map((o) => (
+                      <Link key={o.slug} href={`/contribuer/${o.slug}`} className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-navy-900 transition hover:bg-navy-900 hover:text-white">
+                        {o.shortName} <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="mt-8 flex flex-wrap gap-3">
+                    <button onClick={restart} className="rounded-full bg-navy-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-navy-800">Proposer autre chose ici</button>
+                    <Link href="/" className="rounded-full px-6 py-3 text-sm font-semibold text-navy-900 ring-1 ring-navy-900/15 transition hover:ring-navy-900/40">Accueil</Link>
+                  </div>
                 </motion.div>
-                <h2 className="mt-7 font-display text-3xl font-semibold text-navy-900 sm:text-4xl">Merci, c&apos;est bien reçu&nbsp;!</h2>
-                <p className="mx-auto mt-3 max-w-md text-muted">
-                  {sentCount > 1 ? `Tes ${sentCount} propositions ont été enregistrées` : "Ta proposition a été enregistrée"} pour l&apos;espace <strong className="text-navy-900">{commission.name}</strong>.
-                  Merci de contribuer à la feuille de route de la promotion.
-                </p>
-              </div>
-              <div className="px-6 pb-10 sm:px-10">
-                <p className="eyebrow mt-4 text-muted">Une autre idée ? Contribue aussi à…</p>
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  {others.map((o) => (
-                    <Link key={o.slug} href={`/contribuer/${o.slug}`} className="chip border-navy-900/10 bg-white text-navy-900 hover:border-navy-900 hover:bg-navy-900 hover:text-white">{o.shortName}</Link>
-                  ))}
-                </div>
-                <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                  <button onClick={() => { resetDraft(); setStatus("idle"); startedAt.current = Date.now(); }} className="btn-ghost">Nouvelle contribution ici</button>
-                  <Link href="/" className="btn-navy">Retour à l&apos;accueil</Link>
-                </div>
-              </div>
-            </motion.div>
-          ) : step === 0 ? (
-            <motion.section key="s0" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.35 }}>
-              <StepTitle n={1} title="Faisons connaissance" sub="Ton nom aide la commission à revenir vers toi. Tu peux aussi rester anonyme." />
-              <div className="card space-y-6 p-6 sm:p-8">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {[
-                    { v: false, icon: UserRound, t: "Je m'identifie", d: "Mon nom apparaîtra avec mes idées" },
-                    { v: true, icon: EyeOff, t: "Je reste anonyme", d: "Aucun nom ne sera enregistré" },
-                  ].map(({ v, icon: Icon, t, d }) => (
-                    <button key={t} type="button" onClick={() => { setIdentity({ ...identity, anonymous: v }); setIdentityError(""); }}
-                      aria-pressed={identity.anonymous === v}
-                      className={`flex items-start gap-3 rounded-2xl border-2 p-4 text-left transition-all duration-300
-                        ${identity.anonymous === v ? "border-navy-900 bg-sky-100/70" : "border-navy-900/10 bg-white hover:border-navy-900/30"}`}>
-                      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${identity.anonymous === v ? "bg-navy-900 text-gold-300" : "bg-sky-100 text-navy-700"}`}><Icon className="h-5 w-5" /></span>
-                      <span><span className="block font-semibold text-navy-900">{t}</span><span className="text-sm text-muted">{d}</span></span>
-                    </button>
-                  ))}
-                </div>
-                <AnimatePresence initial={false}>
-                  {!identity.anonymous && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                      <label className="label" htmlFor="fullName">Prénom et nom</label>
-                      <input id="fullName" className={`input ${identityError ? "input-error" : ""}`} value={identity.fullName} maxLength={120} autoComplete="name"
-                        placeholder="Ex. Awa Ndiaye" onChange={(e) => { setIdentity({ ...identity, fullName: e.target.value }); setIdentityError(""); }} />
-                      {identityError && <FieldError msg={identityError} />}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                <div>
-                  <label className="label" htmlFor="dept">Génie / département <span className="font-normal text-muted">(facultatif)</span></label>
-                  <div className="relative">
-                    <select id="dept" className="input appearance-none pr-10" value={identity.department} onChange={(e) => setIdentity({ ...identity, department: e.target.value })}>
-                      <option value="">— Je préfère ne pas préciser —</option>
-                      {departments.map((d) => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-                  </div>
-                </div>
-                <div className="rounded-2xl bg-sky-100/70 px-4 py-3 text-sm text-navy-900">
-                  Commission concernée : <strong>{commission.name}</strong>
-                </div>
-                {/* Champ piège anti-robots, invisible pour les humains */}
-                <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
-                  <label>Site web<input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} /></label>
-                </div>
-              </div>
-              <NavButtons onNext={goNext} nextLabel="Passer à mes idées" />
-            </motion.section>
-          ) : step === 1 ? (
-            <motion.section key="s1" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.35 }}>
-              <StepTitle n={2} title="Partage tes idées" sub="Une proposition = une idée. Ajoute-en autant que tu veux avant d'envoyer." />
-              <div className="space-y-4">
-                {proposals.map((p, i) => {
-                  const e = errors[p.uid] || {};
-                  const isOpen = open === i;
-                  const hasErr = Object.keys(e).length > 0;
-                  return (
-                    <div key={p.uid} id={`p-${p.uid}`} className={`card scroll-mt-28 overflow-hidden transition-shadow ${hasErr ? "ring-2 ring-red-300" : isOpen ? "ring-2 ring-navy-900/10" : ""}`}>
-                      <button type="button" onClick={() => setOpen(isOpen ? -1 : i)} className="flex w-full items-center gap-4 px-5 py-4 text-left sm:px-7" aria-expanded={isOpen}>
-                        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl font-display text-lg font-semibold ${isOpen ? "bg-navy-900 text-gold-300" : "bg-sky-100 text-navy-900"}`}>{i + 1}</span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate font-semibold text-navy-900">{p.title.trim() || "Nouvelle proposition"}</span>
-                          <span className="block truncate text-xs text-muted">{categoryLabel.get(p.categoryId) ?? "Catégorie à choisir"}</span>
-                        </span>
-                        {hasErr && !isOpen && <CircleAlert className="h-5 w-5 text-red-500" />}
-                        <ChevronDown className={`h-5 w-5 text-muted transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
-                      </button>
-                      <AnimatePresence initial={false}>
-                        {isOpen && (
-                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
-                            <div className="space-y-8 border-t border-navy-900/[0.06] px-5 pb-7 pt-6 sm:px-7">
-                              <Group title="Catégorie" hint="De quoi parle ton idée ?">
-                                <div className="flex flex-wrap gap-2" role="radiogroup">
-                                  {commission.categories.map((c) => {
-                                    const sel = p.categoryId === c.id;
-                                    return (
-                                      <button key={c.id} type="button" role="radio" aria-checked={sel} onClick={() => update(i, { categoryId: c.id })}
-                                        className={`chip ${sel ? "border-navy-900 bg-navy-900 text-white shadow-md" : "border-navy-900/12 bg-white text-navy-900 hover:border-navy-900/40 hover:bg-sky-50"}`}>
-                                        {sel && <Check className="-ml-1 mr-1 inline h-3.5 w-3.5 text-gold-300" />}{c.label}
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                                {e.categoryId && <FieldError msg={e.categoryId} />}
-                              </Group>
-
-                              <Group title="L'idée">
-                                <Field label="Titre de la proposition" required error={e.title}>
-                                  <input className={`input ${e.title ? "input-error" : ""}`} maxLength={160} value={p.title} placeholder="Un titre court et parlant"
-                                    onChange={(ev) => update(i, { title: ev.target.value })} />
-                                </Field>
-                                <Field label="Description détaillée" required error={e.description} counter={`${p.description.length}/5000`}>
-                                  <textarea className={`input min-h-36 resize-y ${e.description ? "input-error" : ""}`} maxLength={5000} value={p.description}
-                                    placeholder="Explique ton idée : en quoi elle consiste, comment tu l'imagines…" onChange={(ev) => update(i, { description: ev.target.value })} />
-                                </Field>
-                              </Group>
-
-                              <Group title="Pourquoi & comment">
-                                <Field label="Objectif" hint="Pourquoi cette initiative est-elle intéressante pour la promo ?">
-                                  <textarea className="input min-h-24 resize-y" maxLength={2000} value={p.objective} onChange={(ev) => update(i, { objective: ev.target.value })} />
-                                </Field>
-                                <Field label="Organisation proposée" hint="Comment pourrait-elle être mise en œuvre ? Étapes, responsables, partenaires…">
-                                  <textarea className="input min-h-24 resize-y" maxLength={3000} value={p.organization} onChange={(ev) => update(i, { organization: ev.target.value })} />
-                                </Field>
-                                {commission.extraFields.map((f) => (
-                                  <Field key={f.key} label={f.label}>
-                                    {f.type === "textarea" ? (
-                                      <textarea className="input min-h-24 resize-y" maxLength={2000} placeholder={f.placeholder} value={p.extra[f.key] ?? ""}
-                                        onChange={(ev) => update(i, { extra: { ...p.extra, [f.key]: ev.target.value } })} />
-                                    ) : (
-                                      <input className="input" maxLength={2000} placeholder={f.placeholder} value={p.extra[f.key] ?? ""}
-                                        onChange={(ev) => update(i, { extra: { ...p.extra, [f.key]: ev.target.value } })} />
-                                    )}
-                                  </Field>
-                                ))}
-                              </Group>
-
-                              <Group title="Moyens & calendrier" hint="Facultatif">
-                                <div>
-                                  <span className="label">Budget estimatif</span>
-                                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                    {([["unspecified", "Non renseigné"], ["none", "Sans budget"], ["unknown", "Je ne sais pas"], ["amount", "Montant estimé"]] as const).map(([v, l]) => (
-                                      <button key={v} type="button" onClick={() => update(i, { budgetType: v })} aria-pressed={p.budgetType === v}
-                                        className={`rounded-2xl border px-3 py-2.5 text-[13px] font-semibold transition ${p.budgetType === v ? "border-navy-900 bg-navy-900 text-white" : "border-navy-900/12 bg-white text-navy-900 hover:border-navy-900/40"}`}>{l}</button>
-                                    ))}
-                                  </div>
-                                  <AnimatePresence initial={false}>
-                                    {p.budgetType === "amount" && (
-                                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                                        <div className="relative mt-3">
-                                          <input className={`input pr-20 ${e.budgetAmount ? "input-error" : ""}`} maxLength={120} inputMode="text" value={p.budgetAmount}
-                                            placeholder="Ex. 150 000 ou 1 000 / personne" onChange={(ev) => update(i, { budgetAmount: ev.target.value })} />
-                                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted">FCFA</span>
-                                        </div>
-                                        {e.budgetAmount && <FieldError msg={e.budgetAmount} />}
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </div>
-                                <Field label="Période souhaitée">
-                                  <input className="input" maxLength={160} value={p.period} placeholder="Ex. Janvier, avant les soutenances…" onChange={(ev) => update(i, { period: ev.target.value })} />
-                                  <div className="mt-2 flex flex-wrap gap-1.5">
-                                    {PERIODS.map((s) => (
-                                      <button key={s} type="button" onClick={() => update(i, { period: s })}
-                                        className={`rounded-full px-3 py-1 text-xs font-medium transition ${p.period === s ? "bg-gold-400 text-navy-950" : "bg-sky-100 text-navy-700 hover:bg-sky-200"}`}>{s}</button>
-                                    ))}
-                                  </div>
-                                </Field>
-                              </Group>
-
-                              <Group title="Pour toute la promo">
-                                <Field label="Accessibilité et inclusion" hint="Comment rendre cette proposition accessible à tous (coût, horaires, lieu, situation de chacun) ?">
-                                  <textarea className="input min-h-24 resize-y" maxLength={2000} value={p.inclusion} onChange={(ev) => update(i, { inclusion: ev.target.value })} />
-                                </Field>
-                              </Group>
-
-                              <div className="rounded-3xl border border-gold-400/40 bg-gradient-to-br from-[#FFF9EA] to-[#FBF1D6] p-5 sm:p-6">
-                                <div className="flex items-center gap-2">
-                                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-gold-400 text-navy-950"><NotebookPen className="h-4 w-4" /></span>
-                                  <span className="font-display text-lg font-semibold text-navy-900">Note spéciale</span>
-                                </div>
-                                <p className="mt-1.5 text-sm text-[#7A6326]">Une remarque, une précision, une préoccupation ou une idée qui n&apos;entre dans aucune case ? C&apos;est ici.</p>
-                                <textarea className="input mt-3 min-h-24 resize-y !border-gold-400/40 !bg-white/80 focus:!ring-gold-400/20" maxLength={3000}
-                                  value={p.specialNote} onChange={(ev) => update(i, { specialNote: ev.target.value })} placeholder="Écris librement…" />
-                              </div>
-
-                              <div className="flex flex-wrap justify-end gap-2 border-t border-navy-900/[0.06] pt-5">
-                                <button type="button" onClick={() => duplicate(i)} className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-muted transition hover:bg-sky-100 hover:text-navy-900"><Copy className="h-4 w-4" /> Dupliquer</button>
-                                <button type="button" onClick={() => remove(i)} className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-muted transition hover:bg-red-50 hover:text-red-600"><Trash2 className="h-4 w-4" /> {proposals.length === 1 ? "Vider" : "Supprimer"}</button>
-                              </div>
+              ) : (
+                <motion.form key="form" onSubmit={submit} noValidate initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-[1.75rem] bg-sky-50 p-4 sm:p-8">
+                  <div className="space-y-3">
+                    {proposals.map((p, i) => {
+                      const e = errors[p.uid] || {};
+                      const bad = Object.keys(e).length > 0;
+                      if (i !== active) {
+                        return (
+                          <div key={p.uid} id={`p-${p.uid}`} className={`flex items-center gap-3 rounded-2xl bg-white p-3 pl-4 ${bad ? "ring-2 ring-red-300" : ""}`}>
+                            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-sky-100 text-sm font-bold text-navy-900">{i + 1}</span>
+                            <button type="button" onClick={() => setActive(i)} className="min-w-0 flex-1 text-left">
+                              <span className="block truncate text-[15px] font-semibold text-navy-900">{p.title || "Idée sans titre"}</span>
+                              <span className="block truncate text-xs text-muted">{labels.get(p.categoryId) ?? "Thème à choisir"}</span>
+                            </button>
+                            {bad && <CircleAlert className="h-4 w-4 shrink-0 text-red-500" />}
+                            <button type="button" onClick={() => setActive(i)} className="grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-sky-100 hover:text-navy-900" aria-label="Modifier"><Pencil className="h-4 w-4" /></button>
+                            <button type="button" onClick={() => remove(i)} className="grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-red-50 hover:text-red-600" aria-label="Supprimer"><Trash2 className="h-4 w-4" /></button>
+                          </div>
+                        );
+                      }
+                      const done = [!!p.categoryId, p.title.trim().length >= 3, p.description.trim().length >= 10];
+                      return (
+                        <motion.div key={p.uid} id={`p-${p.uid}`} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="scroll-mt-4 space-y-6">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-sm font-semibold text-navy-900">{proposals.length > 1 ? `Idée n°${i + 1}` : "Ton idée"}</p>
+                            <div className="flex items-center gap-1.5" aria-hidden="true">
+                              {["Thème", "Titre", "Idée"].map((s, k) => (
+                                <span key={s} className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-colors ${done[k] ? "bg-navy-900 text-white" : "bg-white text-muted"}`}>{s}</span>
+                              ))}
                             </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-              </div>
-              {proposals.length < 10 ? (
-                <button type="button" onClick={addProposal}
-                  className="group mt-4 flex w-full items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-navy-900/15 bg-white/50 py-5 font-semibold text-navy-900 transition hover:border-navy-900/40 hover:bg-white">
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-gold-400 text-navy-950 transition group-hover:rotate-90"><Plus className="h-4 w-4" /></span>
-                  Ajouter une autre proposition
-                </button>
-              ) : <p className="mt-4 text-center text-sm text-muted">10 propositions maximum par envoi — tu pourras en envoyer d&apos;autres ensuite.</p>}
-              <NavButtons onBack={() => { setStep(0); scrollTop(); }} onNext={goNext} nextLabel="Relire avant d'envoyer" />
-            </motion.section>
-          ) : (
-            <motion.section key="s2" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.35 }}>
-              <StepTitle n={3} title="Dernière relecture" sub="Vérifie que tout est bon. Tu peux encore modifier chaque proposition." />
-              <div className="card divide-y divide-navy-900/[0.06]">
-                <div className="flex items-center justify-between gap-4 p-5 sm:px-7">
-                  <div>
-                    <p className="eyebrow text-muted">Contribution de</p>
-                    <p className="mt-1 font-semibold text-navy-900">{identity.anonymous ? "Anonyme" : identity.fullName}{identity.department && <span className="font-normal text-muted"> · {identity.department}</span>}</p>
+                          </div>
+
+                          <Step n={1} label="Choisis un thème" error={e.categoryId}>
+                            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Thème">
+                              {commission.categories.map((c) => {
+                                const sel = p.categoryId === c.id;
+                                return (
+                                  <button key={c.id} type="button" role="radio" aria-checked={sel} onClick={() => update(i, { categoryId: c.id })}
+                                    className={`rounded-full px-4 py-2.5 text-[13.5px] font-medium transition-all duration-200 ${sel ? "bg-navy-900 text-white shadow-md" : "bg-white text-navy-900 hover:bg-sky-200/70"}`}>
+                                    {sel && <Check className="-ml-0.5 mr-1.5 inline h-3.5 w-3.5 text-gold-300" />}{c.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </Step>
+
+                          <Step n={2} label="Quel est le titre de votre proposition ?" error={e.title} htmlFor={`t-${p.uid}`}>
+                            <input id={`t-${p.uid}`} className={`field ${e.title ? "field-error" : ""}`} maxLength={160} value={p.title}
+                              placeholder="Ex. Une journée d'intégration avec les filleuls" onChange={(ev) => update(i, { title: ev.target.value })} />
+                          </Step>
+
+                          <Step n={3} label="Expliquez-nous votre idée ! Comment aimeriez-vous voir cette initiative se réaliser ?" error={e.description} htmlFor={`d-${p.uid}`}>
+                            <textarea id={`d-${p.uid}`} className={`field min-h-44 resize-y leading-relaxed ${e.description ? "field-error" : ""}`} maxLength={5000} value={p.description}
+                              placeholder="Écris librement : ce que tu imagines, comment ça pourrait se passer…" onChange={(ev) => update(i, { description: ev.target.value })} />
+                          </Step>
+
+                          <div>
+                            <label htmlFor={`n-${p.uid}`} className="mb-2 block text-sm font-semibold text-navy-900">Note spéciale <span className="font-normal text-muted">· facultatif</span></label>
+                            <textarea id={`n-${p.uid}`} className="field min-h-20 resize-y" maxLength={3000} value={p.specialNote}
+                              placeholder="Une remarque, une précision, une préoccupation…" onChange={(ev) => update(i, { specialNote: ev.target.value })} />
+                          </div>
+
+                          {proposals.length > 1 && (
+                            <button type="button" onClick={() => remove(i)} className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-red-600"><Trash2 className="h-4 w-4" /> Retirer cette idée</button>
+                          )}
+                        </motion.div>
+                      );
+                    })}
                   </div>
-                  <button onClick={() => setStep(0)} className="text-sm font-semibold text-navy-700 hover:underline">Modifier</button>
-                </div>
-                {proposals.map((p, i) => (
-                  <div key={p.uid} className="p-5 sm:px-7">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-gold-600">{categoryLabel.get(p.categoryId)}</p>
-                        <h3 className="mt-1 font-display text-xl font-semibold text-navy-900">{i + 1}. {p.title}</h3>
+
+                  {proposals.length < 10 && (
+                    <button type="button" onClick={add}
+                      className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-navy-900/15 py-4 text-sm font-semibold text-navy-900 transition hover:border-navy-900/40 hover:bg-white">
+                      <Plus className="h-4 w-4" /> Ajouter une autre proposition
+                    </button>
+                  )}
+
+                  {/* Infos facultatives */}
+                  <div className="mt-7 border-t border-navy-900/10 pt-6">
+                    <p className="text-sm font-semibold text-navy-900">Toi <span className="font-normal text-muted">· facultatif, laisse vide pour rester anonyme</span></p>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <input className="field" aria-label="Nom et prénom" placeholder="Nom et prénom" autoComplete="name" maxLength={120} value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                      <div className="relative">
+                        <select className="field appearance-none pr-10" aria-label="Génie ou département" value={department} onChange={(e) => setDepartment(e.target.value)}>
+                          <option value="">Génie / département</option>
+                          {departments.map((d) => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                       </div>
-                      <button onClick={() => { setStep(1); setOpen(i); }} className="shrink-0 text-sm font-semibold text-navy-700 hover:underline">Modifier</button>
                     </div>
-                    <p className="mt-2 line-clamp-3 whitespace-pre-line text-sm leading-relaxed text-muted">{p.description}</p>
-                    <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                      {p.budgetType !== "unspecified" && <Tag>{p.budgetType === "none" ? "Sans budget" : p.budgetType === "unknown" ? "Budget : je ne sais pas" : `Budget : ${p.budgetAmount} FCFA`}</Tag>}
-                      {p.period && <Tag>{p.period}</Tag>}
-                      {p.specialNote.trim() && <Tag gold>Note spéciale</Tag>}
+                    <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+                      <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
                     </div>
                   </div>
-                ))}
-              </div>
-              {status === "error" && (
-                <div role="alert" className="mt-5 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
-                  <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" /> <span>{serverError} Tes réponses sont conservées : tu peux réessayer.</span>
-                </div>
+
+                  {status === "error" && (
+                    <p role="alert" className="mt-5 flex items-start gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700"><CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />{serverError} Tes réponses sont conservées.</p>
+                  )}
+
+                  <div className="mt-6 flex items-center gap-1.5">
+                    <button disabled={status === "submitting"} className="rounded-full bg-navy-950 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-navy-800 disabled:opacity-60">
+                      {status === "submitting" ? <span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Envoi…</span>
+                        : proposals.length > 1 ? `Envoyer mes ${proposals.length} idées` : "Envoyer ma contribution"}
+                    </button>
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-navy-950 text-white" aria-hidden="true"><ArrowUpRight className="h-5 w-5" /></span>
+                  </div>
+                </motion.form>
               )}
-              <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-                <button onClick={() => { setStep(1); scrollTop(); }} className="btn-ghost"><ArrowLeft className="h-4 w-4" /> Retour</button>
-                <button onClick={submit} disabled={status === "submitting"} className="btn-gold !px-8 !py-4 !text-base">
-                  {status === "submitting" ? <><Loader2 className="h-5 w-5 animate-spin" /> Envoi en cours…</> : <>Envoyer ma contribution <Send className="h-4 w-4" /></>}
-                </button>
+            </AnimatePresence>
+          </div>
+
+          {/* Visuel de la commission */}
+          <aside className="order-1 lg:order-2">
+            <div className="relative h-44 overflow-hidden rounded-[1.75rem] bg-navy-900 sm:h-64 lg:sticky lg:top-6 lg:h-[560px]">
+              <img src={commission.image} alt={commission.imageAlt} className="absolute inset-0 h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-navy-950/70 via-transparent to-transparent" />
+              <span className="absolute right-4 top-4 rounded-full border border-white/50 bg-white/10 px-3.5 py-1 text-xs font-semibold text-white backdrop-blur">{commission.shortName}</span>
+              <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+                <p className="text-[15px] font-semibold">{commission.tagline}</p>
+                <p className="mt-0.5 text-xs text-white/70">{commission.categories.length} thèmes · 2 minutes · anonymat possible</p>
               </div>
-            </motion.section>
-          )}
-        </AnimatePresence>
+            </div>
+          </aside>
+        </div>
       </div>
     </main>
   );
 }
 
-function StepTitle({ n, title, sub }: { n: number; title: string; sub: string }) {
-  return (
-    <div className="mb-6">
-      <p className="eyebrow text-gold-600">Étape {n} sur 3</p>
-      <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight text-navy-900 sm:text-4xl">{title}</h2>
-      <p className="mt-2 text-muted">{sub}</p>
-    </div>
-  );
-}
-
-function Group({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <fieldset className="space-y-4">
-      <legend className="mb-3 flex items-baseline gap-2">
-        <span className="eyebrow text-navy-700">{title}</span>
-        {hint && <span className="text-xs text-muted">· {hint}</span>}
-      </legend>
-      {children}
-    </fieldset>
-  );
-}
-
-function Field({ label, hint, required, error, counter, children }: { label: string; hint?: string; required?: boolean; error?: string; counter?: string; children: React.ReactNode }) {
+function Step({ n, label, error, htmlFor, children }: { n: number; label: string; error?: string; htmlFor?: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="flex items-baseline justify-between">
-        <span className="label">{label} {required && <span className="text-gold-600">*</span>}</span>
-        {counter && <span className="text-[11px] text-muted/70">{counter}</span>}
-      </div>
-      {hint && <p className="-mt-0.5 mb-2 text-xs text-muted">{hint}</p>}
+      <label htmlFor={htmlFor} className="mb-2.5 flex items-start gap-2.5 text-[15px] font-semibold leading-snug text-navy-900">
+        <span className="mt-px grid h-6 w-6 shrink-0 place-items-center rounded-full bg-navy-900 text-[11px] font-bold text-white">{n}</span>
+        {label}
+      </label>
       {children}
-      {error && <FieldError msg={error} />}
-    </div>
-  );
-}
-
-function FieldError({ msg }: { msg: string }) {
-  return <p role="alert" className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600"><CircleAlert className="h-3.5 w-3.5" />{msg}</p>;
-}
-
-function Tag({ children, gold }: { children: React.ReactNode; gold?: boolean }) {
-  return <span className={`rounded-full px-2.5 py-1 font-medium ${gold ? "bg-gold-300/40 text-[#7A6326]" : "bg-sky-100 text-navy-700"}`}>{children}</span>;
-}
-
-function NavButtons({ onBack, onNext, nextLabel }: { onBack?: () => void; onNext: () => void; nextLabel: string }) {
-  return (
-    <div className={`mt-8 flex flex-col-reverse gap-3 sm:flex-row ${onBack ? "sm:justify-between" : "sm:justify-end"}`}>
-      {onBack && <button onClick={onBack} className="btn-ghost"><ArrowLeft className="h-4 w-4" /> Retour</button>}
-      <button onClick={onNext} className="btn-navy !px-7 !py-3.5">{nextLabel} <ArrowRight className="h-4 w-4" /></button>
+      {error && <p role="alert" className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600"><CircleAlert className="h-3.5 w-3.5" />{error}</p>}
     </div>
   );
 }

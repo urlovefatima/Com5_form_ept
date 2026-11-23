@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowDownUp, ChevronDown, CircleAlert, EyeOff, Loader2, NotebookPen, Search, UserRound } from "lucide-react";
 import type { Commission, ProposalRow } from "@/lib/types";
-import { authorLabel, budgetLabel, formatDate } from "@/lib/format";
+import { authorLabel, formatDate } from "@/lib/format";
 import ExportButtons from "./ExportButtons";
 
 export default function ProposalsBrowser({ commissions, initialCommission }: { commissions: Commission[]; initialCommission: string }) {
   const [commission, setCommission] = useState(initialCommission);
+  const [category, setCategory] = useState("");
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
   const [sort, setSort] = useState<"desc" | "asc">("desc");
@@ -24,6 +25,7 @@ export default function ProposalsBrowser({ commissions, initialCommission }: { c
     setLoading(true); setError("");
     const params = new URLSearchParams({ sort, identity });
     if (commission) params.set("commission", commission);
+    if (commission && category) params.set("category", category);
     if (debounced.trim()) params.set("q", debounced.trim());
     fetch(`/api/admin/proposals?${params}`, { signal: ctrl.signal })
       .then(async (r) => { if (r.status === 401) { window.location.href = "/admin/login"; return; } if (!r.ok) throw new Error(); setRows((await r.json()).rows); })
@@ -33,7 +35,7 @@ export default function ProposalsBrowser({ commissions, initialCommission }: { c
     if (commission) url.searchParams.set("commission", commission); else url.searchParams.delete("commission");
     window.history.replaceState(null, "", url);
     return () => ctrl.abort();
-  }, [commission, debounced, sort, identity]);
+  }, [commission, category, debounced, sort, identity]);
 
   const byslug = useMemo(() => new Map(commissions.map((c) => [c.slug, c])), [commissions]);
   const current = commission ? byslug.get(commission) : undefined;
@@ -51,13 +53,21 @@ export default function ProposalsBrowser({ commissions, initialCommission }: { c
 
       <div className="mt-6 flex gap-2 overflow-x-auto pb-1">
         {[{ slug: "", shortName: "Toutes" }, ...commissions].map((c) => (
-          <button key={c.slug} onClick={() => setCommission(c.slug)}
+          <button key={c.slug} onClick={() => { setCommission(c.slug); setCategory(""); }}
             className={`chip shrink-0 ${commission === c.slug ? "border-navy-900 bg-navy-900 text-white" : "border-navy-900/10 bg-white text-navy-900 hover:border-navy-900/40"}`}>
             {c.shortName}
           </button>
         ))}
       </div>
 
+      {current && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {[{ id: "", label: "Tous les thèmes" }, ...current.categories].map((t) => (
+            <button key={t.id} onClick={() => setCategory(t.id)}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${category === t.id ? "bg-gold-400 text-navy-950" : "bg-white text-navy-700 hover:bg-sky-100"}`}>{t.label}</button>
+          ))}
+        </div>
+      )}
       <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
         <div className="relative">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
@@ -109,10 +119,6 @@ export default function ProposalsBrowser({ commissions, initialCommission }: { c
               </button>
               {isOpen && (
                 <div className="space-y-4 border-t border-navy-900/[0.06] px-5 pb-6 pt-5 sm:px-6">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Meta k="Budget estimatif" v={budgetLabel(p.budgetType, p.budgetAmount)} />
-                    <Meta k="Période souhaitée" v={p.period || "Non précisée"} />
-                  </div>
                   <Block k="Description détaillée" v={p.description} />
                   <Block k="Objectif" v={p.objective} />
                   <Block k="Organisation proposée" v={p.organization} />
@@ -134,9 +140,6 @@ export default function ProposalsBrowser({ commissions, initialCommission }: { c
   );
 }
 
-function Meta({ k, v }: { k: string; v: string }) {
-  return <div className="rounded-2xl bg-sky-50 px-4 py-3"><p className="text-[11px] font-bold uppercase tracking-wider text-navy-700">{k}</p><p className="mt-0.5 text-sm font-medium text-navy-900">{v}</p></div>;
-}
 function Block({ k, v }: { k: string; v?: string | null }) {
   if (!v) return null;
   return <div><p className="text-[11px] font-bold uppercase tracking-wider text-navy-700">{k}</p><p className="mt-1 whitespace-pre-line text-[14.5px] leading-relaxed text-ink">{v}</p></div>;

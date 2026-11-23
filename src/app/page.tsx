@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { ArrowDown, EyeOff, Layers, Timer, MousePointerClick, PenLine, Send, Sparkles } from "lucide-react";
-import SiteHeader from "@/components/SiteHeader";
+import { ArrowUpRight, Layers, PenLine, Send, Shapes } from "lucide-react";
 import SiteFooter from "@/components/SiteFooter";
 import CommissionCard from "@/components/CommissionCard";
 import Reveal from "@/components/Reveal";
@@ -10,133 +9,103 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const commissions = await getCommissions();
-  const main = commissions.filter((c) => c.slug !== "coordination");
-  const coordination = commissions.find((c) => c.slug === "coordination");
 
   return (
-    <main>
+    <main className="min-h-screen bg-sky-50">
       {/* HERO */}
-      <section className="relative isolate overflow-hidden bg-navy-950 text-white">
-        <img src="/images/promo.jpg" alt="" className="absolute inset-0 -z-20 h-full w-full object-cover object-[center_40%] opacity-30" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,rgba(29,78,137,.55),transparent_60%),linear-gradient(180deg,rgba(6,22,41,.55)_0%,rgba(6,22,41,.92)_75%,#061629_100%)]" />
-        <SiteHeader />
-        <div className="container-x pb-24 pt-36 sm:pb-32 sm:pt-44">
-          <Reveal>
-            <p className="eyebrow inline-flex items-center gap-2 rounded-full border border-gold-400/30 bg-gold-400/10 px-4 py-1.5 text-gold-300">
-              <Sparkles className="h-3.5 w-3.5" /> COM5 · Your Voice, Our Roadmap
-            </p>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <h1 className="mt-7 max-w-4xl font-display text-[2.9rem] font-semibold leading-[1.02] tracking-tight sm:text-7xl lg:text-[5.4rem]">
-              Ton avis <em className="font-medium italic text-gold-400">aussi</em> compte&nbsp;!
-            </h1>
-          </Reveal>
-          <Reveal delay={0.16}>
-            <p className="mt-6 max-w-2xl font-display text-xl italic text-sky-200 sm:text-2xl">
-              Une promotion, cinq commissions, une vision commune.
-            </p>
-          </Reveal>
-          <Reveal delay={0.24}>
-            <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/70 sm:text-lg">
-              La feuille de route de notre dernière année à l&apos;EPT se construit <strong className="font-semibold text-white">collectivement</strong>.
-              Choisis une commission, partage tes idées en quelques minutes — avec ou sans ton nom.
-            </p>
-          </Reveal>
-          <Reveal delay={0.32} className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <Link href="#commissions" className="btn-gold !px-8 !py-4 !text-base">Partager mes idées <ArrowDown className="h-4 w-4" /></Link>
-            <Link href="#comment" className="btn-ghost-dark !px-8 !py-4 !text-base">Comment ça marche</Link>
-          </Reveal>
-          <Reveal delay={0.4}>
-            <dl className="mt-16 grid max-w-3xl grid-cols-1 gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 sm:grid-cols-3">
-              {[
-                { icon: Layers, t: "6 espaces", d: "5 commissions + la coordination" },
-                { icon: EyeOff, t: "Anonymat possible", d: "Ton nom est facultatif" },
-                { icon: Timer, t: "≈ 5 minutes", d: "Brouillon gardé automatiquement" },
-              ].map(({ icon: Icon, t, d }) => (
-                <div key={t} className="flex items-start gap-3 bg-navy-950/60 p-5 backdrop-blur">
-                  <Icon className="mt-0.5 h-5 w-5 shrink-0 text-gold-400" />
-                  <div><dt className="font-semibold">{t}</dt><dd className="text-sm text-white/55">{d}</dd></div>
-                </div>
-              ))}
-            </dl>
-          </Reveal>
-        </div>
-      </section>
+      <div className="p-2.5 sm:p-4">
+        <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-navy-950 text-white sm:rounded-[2.25rem]">
+          <img src="/images/promo.jpg" alt="" className="absolute inset-0 -z-20 h-full w-full object-cover object-[center_35%]" />
+          <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgba(6,22,41,.88)_0%,rgba(11,37,69,.7)_45%,rgba(11,37,69,.25)_100%)]" />
 
-      {/* INTRO */}
-      <section className="relative bg-white">
-        <div className="container-x grid items-center gap-12 py-20 sm:py-28 lg:grid-cols-[1.1fr_1fr]">
-          <Reveal>
-            <p className="eyebrow text-gold-600">Le mot de la COM5</p>
-            <blockquote className="mt-5 font-display text-2xl leading-snug text-navy-900 sm:text-[2rem]">
-              « La dernière année à l&apos;EPT est une étape importante de notre parcours. Nous souhaitons en faire une expérience
-              <span className="italic text-navy-700"> enrichissante, inclusive et mémorable</span> pour tous. »
-            </blockquote>
-            <p className="mt-6 max-w-xl leading-relaxed text-muted">
-              Cette plateforme vous donne la possibilité de contribuer directement aux initiatives de votre promotion.
-              Vos idées comptent : participez à la construction de notre feuille de route !
-            </p>
-          </Reveal>
-          <Reveal delay={0.1} className="relative">
-            <div className="absolute -inset-3 -z-0 rotate-2 rounded-[2rem] bg-gold-400/25" />
-            <img src="/images/promo.jpg" alt="La promotion réunie en tenue dans l'amphithéâtre de l'EPT" loading="lazy"
-              className="relative aspect-[16/10] w-full rounded-[1.75rem] object-cover shadow-2xl" />
-          </Reveal>
-        </div>
-      </section>
+          <header className="flex items-center justify-between gap-3 p-4 sm:p-6">
+            <Link href="/" className="flex items-center gap-2.5 rounded-full bg-white py-1.5 pl-2 pr-4 text-navy-900 shadow-lg">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-navy-950"><img src="/images/emblem-ept.png" alt="" className="h-4 w-auto" /></span>
+              <span className="text-sm font-extrabold tracking-tight">COM5</span>
+            </Link>
+            <nav className="flex items-center gap-2">
+              <div className="hidden items-center rounded-full border border-white/20 bg-white/10 p-1 backdrop-blur-md md:flex">
+                <a href="#commissions" className="rounded-full px-4 py-1.5 text-sm font-semibold text-white/90 transition hover:bg-white/15">Commissions</a>
+                <a href="#comment" className="rounded-full px-4 py-1.5 text-sm font-semibold text-white/90 transition hover:bg-white/15">Comment ça marche</a>
+              </div>
+              <a href="#commissions" className="inline-flex items-center gap-2 rounded-full bg-navy-900/90 py-2 pl-4 pr-2 text-sm font-semibold backdrop-blur transition hover:bg-navy-800">
+                Participer <span className="grid h-6 w-6 place-items-center rounded-full bg-white/15"><ArrowUpRight className="h-3.5 w-3.5" /></span>
+              </a>
+            </nav>
+          </header>
+
+          <div className="px-5 pb-8 pt-10 sm:px-12 sm:pb-12 sm:pt-16 lg:pt-20">
+            <Reveal>
+              <span className="inline-flex rounded-full bg-white/15 px-3.5 py-1 text-xs font-semibold text-white/90 backdrop-blur">École Polytechnique de Thiès · Your Voice, Our Roadmap</span>
+            </Reveal>
+            <Reveal delay={0.06}>
+              <h1 className="mt-5 max-w-3xl text-[2.6rem] font-extrabold leading-[1.02] tracking-[-0.03em] sm:text-6xl lg:text-7xl">
+                Ton avis <span className="font-display font-medium italic text-gold-300">aussi</span> compte&nbsp;!
+              </h1>
+            </Reveal>
+            <Reveal delay={0.12}>
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg">
+                Une promotion, cinq commissions, une vision commune. Partage tes idées pour construire la feuille de route de notre dernière année.
+              </p>
+            </Reveal>
+            <Reveal delay={0.18}>
+              <a href="#commissions" className="mt-8 inline-flex items-center gap-3 rounded-full bg-white py-2 pl-6 pr-2 font-semibold text-navy-900 shadow-xl transition hover:-translate-y-0.5">
+                Choisir une commission
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-navy-900 text-white"><ArrowUpRight className="h-5 w-5" /></span>
+              </a>
+            </Reveal>
+
+            {/* Accès rapide en verre dépoli */}
+            <div className="-mx-5 mt-10 flex snap-x gap-2.5 overflow-x-auto px-5 pb-1 sm:mx-0 sm:mt-14 sm:px-0 lg:justify-end">
+              {commissions.map((c) => (
+                <Link key={c.slug} href={`/contribuer/${c.slug}`}
+                  className="group flex shrink-0 snap-start items-center gap-2.5 rounded-2xl border border-white/20 bg-white/10 p-1.5 pr-3.5 backdrop-blur-md transition hover:bg-white/20">
+                  <img src={c.image} alt="" className="h-10 w-10 rounded-xl object-cover" />
+                  <span className="text-[13px] font-semibold">{c.shortName}</span>
+                  <ArrowUpRight className="h-3.5 w-3.5 text-white/60 transition group-hover:rotate-45 group-hover:text-white" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* COMMISSIONS */}
-      <section id="commissions" className="scroll-mt-6 bg-sky-50">
-        <div className="container-x py-20 sm:py-28">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <p className="eyebrow text-navy-700">Six espaces de contribution</p>
-            <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-navy-900 sm:text-5xl">Où veux-tu faire entendre ta voix&nbsp;?</h2>
-            <p className="mt-4 text-muted">Chaque commission a son propre formulaire, avec des catégories pensées pour ses missions.</p>
-          </Reveal>
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {main.map((c, i) => (
-              <Reveal key={c.slug} delay={(i % 3) * 0.08} className="h-full">
-                <CommissionCard c={c} index={i + 1} />
+      <section id="commissions" className="relative scroll-mt-4 px-4 pb-16 pt-12 sm:px-8 sm:pt-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <h2 className="text-4xl font-extrabold tracking-[-0.03em] text-navy-950 sm:text-5xl">
+              Choisis ta <span className="inline-block rounded-full bg-white px-4 py-0.5 shadow-sm">commission</span>
+            </h2>
+            <p className="max-w-xs text-[15px] leading-relaxed text-muted">Un thème, un titre, ton idée. Moins de deux minutes, avec ou sans ton nom.</p>
+          </div>
+          <div className="mt-10 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 lg:gap-x-5 lg:gap-y-7 lg:pb-8">
+            {commissions.map((c, i) => (
+              <Reveal key={c.slug} delay={(i % 3) * 0.06} className={i % 3 === 1 ? "lg:translate-y-8" : ""}>
+                <CommissionCard c={c} />
               </Reveal>
             ))}
-            {coordination && (
-              <Reveal delay={0.16} className="h-full">
-                <CommissionCard c={coordination} index={6} featured={false} />
-              </Reveal>
-            )}
           </div>
         </div>
       </section>
 
-      {/* COMMENT */}
-      <section id="comment" className="scroll-mt-6 bg-navy-900 text-white">
-        <div className="container-x py-20 sm:py-24">
-          <Reveal className="max-w-2xl">
-            <p className="eyebrow text-gold-400">Comment ça marche</p>
-            <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Quatre étapes, zéro paperasse.</h2>
-          </Reveal>
-          <ol className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* COMMENT ÇA MARCHE */}
+      <section id="comment" className="scroll-mt-4 px-4 pb-14 sm:px-8">
+        <div className="mx-auto max-w-6xl rounded-[1.75rem] bg-white p-6 sm:p-10">
+          <h2 className="text-2xl font-extrabold tracking-[-0.02em] text-navy-950 sm:text-3xl">Comment ça marche</h2>
+          <ol className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: MousePointerClick, t: "Choisis une commission", d: "Celle qui te parle le plus — tu pourras revenir pour les autres." },
-              { icon: Layers, t: "Sélectionne une catégorie", d: "Formations, sorties, sponsors, examens… chaque espace a les siennes." },
-              { icon: PenLine, t: "Décris ton idée", d: "Objectif, organisation, budget, période. Ajoute autant d'idées que tu veux." },
-              { icon: Send, t: "Envoie", d: "Ta contribution arrive directement à la COM5 pour bâtir la feuille de route." },
-            ].map(({ icon: Icon, t, d }, i) => (
-              <Reveal key={t} delay={i * 0.08}>
-                <li className="h-full rounded-3xl border border-white/10 bg-white/[0.04] p-6 transition hover:border-gold-400/40 hover:bg-white/[0.07]">
-                  <div className="flex items-center justify-between">
-                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gold-400/15 text-gold-300"><Icon className="h-5 w-5" /></span>
-                    <span className="font-display text-4xl italic text-white/15">{i + 1}</span>
-                  </div>
-                  <h3 className="mt-5 text-lg font-semibold">{t}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-white/60">{d}</p>
-                </li>
-              </Reveal>
+              { icon: Layers, t: "Choisis une commission" },
+              { icon: Shapes, t: "Sélectionne un thème" },
+              { icon: PenLine, t: "Donne un titre et décris ton idée" },
+              { icon: Send, t: "Envoie, c'est tout !" },
+            ].map(({ icon: Icon, t }, i) => (
+              <li key={t} className="flex items-center gap-3 rounded-2xl bg-sky-50 p-4">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-navy-900 text-gold-300"><Icon className="h-[18px] w-[18px]" /></span>
+                <span className="text-[15px] font-semibold text-navy-900"><span className="text-muted">{i + 1}. </span>{t}</span>
+              </li>
             ))}
           </ol>
-          <Reveal className="mt-14 flex justify-center">
-            <Link href="#commissions" className="btn-gold !px-8 !py-4 !text-base">Je participe</Link>
-          </Reveal>
         </div>
       </section>
       <SiteFooter />

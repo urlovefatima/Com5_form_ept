@@ -58,7 +58,7 @@ export default function CommissionsEditor({ initial, initialDepartments }: { ini
           </div>
 
           <div>
-            <p className="label">Catégories de propositions</p>
+            <p className="label">Thèmes proposés aux étudiants</p>
             <div className="space-y-2">
               {c.categories.map((cat, i) => (
                 <div key={i} className="flex gap-2">
@@ -68,29 +68,12 @@ export default function CommissionsEditor({ initial, initialDepartments }: { ini
               ))}
             </div>
             <button onClick={() => {
-              const label = "Nouvelle catégorie"; let id = slugify(label); let n = 2;
+              const label = "Nouveau thème"; let id = slugify(label); let n = 2;
               while (c.categories.some((x) => x.id === id)) id = `${slugify(label)}-${n++}`;
               set({ categories: [...c.categories, { id, label }] });
-            }} className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-navy-700 hover:underline"><Plus className="h-4 w-4" /> Ajouter une catégorie</button>
+            }} className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-navy-700 hover:underline"><Plus className="h-4 w-4" /> Ajouter un thème</button>
           </div>
 
-          <div>
-            <p className="label">Champs spécifiques à cette commission</p>
-            <div className="space-y-2">
-              {c.extraFields.map((f, i) => (
-                <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1.4fr_auto_auto]">
-                  <input className="input" value={f.label} placeholder="Libellé" onChange={(e) => set({ extraFields: c.extraFields.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)) })} />
-                  <input className="input" value={f.placeholder ?? ""} placeholder="Texte d'aide" onChange={(e) => set({ extraFields: c.extraFields.map((x, j) => (j === i ? { ...x, placeholder: e.target.value } : x)) })} />
-                  <select className="input" value={f.type} onChange={(e) => set({ extraFields: c.extraFields.map((x, j) => (j === i ? { ...x, type: e.target.value as "text" } : x)) })}>
-                    <option value="text">Ligne</option><option value="textarea">Paragraphe</option>
-                  </select>
-                  <button onClick={() => set({ extraFields: c.extraFields.filter((_, j) => j !== i) })} className="rounded-2xl px-3 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Supprimer"><Trash2 className="h-4 w-4" /></button>
-                </div>
-              ))}
-            </div>
-            {c.extraFields.length < 6 && <button onClick={() => set({ extraFields: [...c.extraFields, { key: `champ_${Date.now().toString(36)}`, label: "Nouveau champ", placeholder: "", type: "text" }] })}
-              className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-navy-700 hover:underline"><Plus className="h-4 w-4" /> Ajouter un champ</button>}
-          </div>
 
           <div className="flex flex-wrap items-center gap-4 border-t border-navy-900/[0.06] pt-5">
             <button onClick={save} disabled={state.busy} className="btn-navy">{state.busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Enregistrer</button>

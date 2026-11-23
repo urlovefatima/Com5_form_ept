@@ -43,3 +43,9 @@ body { @apply bg-sky-50 text-ink font-sans antialiased; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+@utility field { @apply w-full rounded-2xl border border-transparent bg-white px-4 py-3.5 text-base text-ink placeholder:text-muted/55 transition focus:border-navy-500/40 focus:outline-none focus:ring-4 focus:ring-navy-500/10 sm:text-[15px]; }
+@utility field-error { @apply border-red-300 ring-4 ring-red-500/10; }
+
+/* Barres de défilement invisibles (le défilement reste actif) */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { display: none; width: 0; height: 0; }

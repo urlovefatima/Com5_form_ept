@@ -11,7 +11,7 @@ export default function SiteHeader({ dark = true }: { dark?: boolean }) {
             <span className={`block text-[10px] font-semibold uppercase tracking-[0.18em] ${dark ? "text-white/60" : "text-muted"}`}>École Polytechnique de Thiès</span>
           </span>
         </Link>
-        <nav className="hidden items-center gap-8 text-sm font-medium sm:flex">
+        <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
           <Link href="/#commissions" className={`${dark ? "text-white/75 hover:text-white" : "text-muted hover:text-navy-900"} transition`}>Commissions</Link>
           <Link href="/#comment" className={`${dark ? "text-white/75 hover:text-white" : "text-muted hover:text-navy-900"} transition`}>Comment ça marche</Link>
           <Link href="/#commissions" className={dark ? "btn-ghost-dark !py-2" : "btn-ghost !py-2"}>Partager mes idées</Link>

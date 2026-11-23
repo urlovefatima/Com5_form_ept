@@ -9,18 +9,40 @@
     "image": "/images/pedagogique.jpg",
     "imageAlt": "Séance de travaux pratiques en laboratoire avec un enseignant",
     "categories": [
-      { "id": "formations", "label": "Formations et renforcement de compétences" },
-      { "id": "ateliers", "label": "Ateliers pratiques et séminaires" },
-      { "id": "pfe", "label": "Accompagnement des PFE" },
-      { "id": "soutenances", "label": "Préparation aux soutenances" },
-      { "id": "visites", "label": "Visites d'entreprises et sorties pédagogiques" },
-      { "id": "certifications", "label": "Certifications et formations linguistiques" },
-      { "id": "ressources", "label": "Ressources pédagogiques" },
-      { "id": "autres", "label": "Autres suggestions" }
+      {
+        "id": "formations-et-competences",
+        "label": "Formations et compétences"
+      },
+      {
+        "id": "projets-de-fin-d-etudes-pfe",
+        "label": "Projets de fin d'études (PFE)"
+      },
+      {
+        "id": "seminaires-et-ateliers",
+        "label": "Séminaires et ateliers"
+      },
+      {
+        "id": "preparation-aux-soutenances",
+        "label": "Préparation aux soutenances"
+      },
+      {
+        "id": "visites-pedagogiques",
+        "label": "Visites pédagogiques"
+      },
+      {
+        "id": "certifications-et-langues",
+        "label": "Certifications et langues"
+      },
+      {
+        "id": "ressources-pedagogiques",
+        "label": "Ressources pédagogiques"
+      },
+      {
+        "id": "autre-idee",
+        "label": "Autre idée"
+      }
     ],
-    "extraFields": [
-      { "key": "public_cible", "label": "Public cible", "placeholder": "Toute la promotion, un génie en particulier, les étudiants en PFE…", "type": "text" }
-    ]
+    "extraFields": []
   },
   {
     "slug": "insertion",
@@ -32,20 +54,44 @@
     "image": "/images/insertion.jpg",
     "imageAlt": "Élève ingénieur en tenue de cérémonie de l'EPT",
     "categories": [
-      { "id": "stages-emplois", "label": "Recherche de stages et d'emplois" },
-      { "id": "opportunites", "label": "Opportunités professionnelles" },
-      { "id": "entretiens", "label": "Préparation aux entretiens" },
-      { "id": "cv", "label": "Rédaction de CV et lettres de motivation" },
-      { "id": "reseautage", "label": "Réseautage et rencontres avec les entreprises" },
-      { "id": "entrepreneuriat", "label": "Entrepreneuriat" },
-      { "id": "bourses", "label": "Bourses et études à l'étranger" },
-      { "id": "mentorat", "label": "Mentorat et accompagnement professionnel" },
-      { "id": "autres", "label": "Autres suggestions" }
+      {
+        "id": "stages",
+        "label": "Stages"
+      },
+      {
+        "id": "emploi",
+        "label": "Emploi"
+      },
+      {
+        "id": "cv-et-lettres-de-motivation",
+        "label": "CV et lettres de motivation"
+      },
+      {
+        "id": "entretiens",
+        "label": "Entretiens"
+      },
+      {
+        "id": "reseautage-et-entreprises",
+        "label": "Réseautage et entreprises"
+      },
+      {
+        "id": "entrepreneuriat",
+        "label": "Entrepreneuriat"
+      },
+      {
+        "id": "opportunites-a-l-etranger",
+        "label": "Opportunités à l'étranger"
+      },
+      {
+        "id": "mentorat",
+        "label": "Mentorat"
+      },
+      {
+        "id": "autre-idee",
+        "label": "Autre idée"
+      }
     ],
-    "extraFields": [
-      { "key": "public_cible", "label": "Profils concernés", "placeholder": "Futurs salariés, entrepreneurs, candidats à un master…", "type": "text" },
-      { "key": "partenaires", "label": "Partenaires ou intervenants possibles", "placeholder": "Entreprises, anciens, cabinets, ambassades, associations…", "type": "text" }
-    ]
+    "extraFields": []
   },
   {
     "slug": "permis",
@@ -57,19 +103,44 @@
     "image": "/images/permis.svg",
     "imageAlt": "Illustration d'une route et d'un volant",
     "categories": [
-      { "id": "code", "label": "Organisation des cours de code" },
-      { "id": "conduite", "label": "Organisation des cours de conduite" },
-      { "id": "paiement", "label": "Modalités de paiement" },
-      { "id": "subventions", "label": "Gestion des subventions" },
-      { "id": "auto-ecoles", "label": "Relations avec les auto-écoles" },
-      { "id": "examens", "label": "Organisation des examens" },
-      { "id": "calendrier", "label": "Gestion du calendrier" },
-      { "id": "accompagnement", "label": "Amélioration de l'accompagnement" },
-      { "id": "autres", "label": "Autres suggestions" }
+      {
+        "id": "cours-de-code",
+        "label": "Cours de code"
+      },
+      {
+        "id": "cours-de-conduite",
+        "label": "Cours de conduite"
+      },
+      {
+        "id": "subventions",
+        "label": "Subventions"
+      },
+      {
+        "id": "paiement",
+        "label": "Paiement"
+      },
+      {
+        "id": "auto-ecoles",
+        "label": "Auto-écoles"
+      },
+      {
+        "id": "examens",
+        "label": "Examens"
+      },
+      {
+        "id": "calendrier",
+        "label": "Calendrier"
+      },
+      {
+        "id": "accompagnement",
+        "label": "Accompagnement"
+      },
+      {
+        "id": "autre-idee",
+        "label": "Autre idée"
+      }
     ],
-    "extraFields": [
-      { "key": "situation", "label": "Difficulté constatée", "placeholder": "Qu'est-ce qui pose problème aujourd'hui ? (horaires, coûts, déplacements…)", "type": "textarea" }
-    ]
+    "extraFields": []
   },
   {
     "slug": "sociale",
@@ -81,21 +152,44 @@
     "image": "/images/sociale.jpg",
     "imageAlt": "Étudiants de la promotion réunis et souriants après une remise de diplômes",
     "categories": [
-      { "id": "cohesion", "label": "Cohésion et team building" },
-      { "id": "sorties", "label": "Sorties et moments de détente" },
-      { "id": "soirees", "label": "Soirées à thème et événements" },
-      { "id": "artistique", "label": "Activités artistiques et créatives" },
-      { "id": "filleuls", "label": "Activités avec les filleuls et promotions cadettes" },
-      { "id": "solidarite", "label": "Actions sociales et solidaires" },
-      { "id": "bien-etre", "label": "Bien-être et accompagnement" },
-      { "id": "celebrations", "label": "Anniversaires et célébrations" },
-      { "id": "relations", "label": "Renforcer les liens entre étudiants" },
-      { "id": "autres", "label": "Autres idées originales" }
+      {
+        "id": "cohesion",
+        "label": "Cohésion"
+      },
+      {
+        "id": "sorties-et-detente",
+        "label": "Sorties et détente"
+      },
+      {
+        "id": "evenements-et-soirees",
+        "label": "Événements et soirées"
+      },
+      {
+        "id": "activites-avec-les-filleul-e-s",
+        "label": "Activités avec les filleul·e·s"
+      },
+      {
+        "id": "solidarite",
+        "label": "Solidarité"
+      },
+      {
+        "id": "bien-etre",
+        "label": "Bien-être"
+      },
+      {
+        "id": "activites-creatives",
+        "label": "Activités créatives"
+      },
+      {
+        "id": "celebrations",
+        "label": "Célébrations"
+      },
+      {
+        "id": "autre-idee",
+        "label": "Autre idée"
+      }
     ],
-    "extraFields": [
-      { "key": "originalite", "label": "Ce qui rend l'idée unique", "placeholder": "Pourquoi la promo s'en souviendra-t-elle ?", "type": "textarea" },
-      { "key": "format", "label": "Format envisagé", "placeholder": "Lieu, durée, nombre de participants, intérieur / extérieur…", "type": "text" }
-    ]
+    "extraFields": []
   },
   {
     "slug": "finance",
@@ -107,19 +201,40 @@
     "image": "/images/finance.svg",
     "imageAlt": "Illustration de pièces et d'un graphique de croissance",
     "categories": [
-      { "id": "cotisations", "label": "Cotisations et contributions" },
-      { "id": "caisse", "label": "Gestion de la caisse commune" },
-      { "id": "sponsors", "label": "Recherche de sponsors et partenaires" },
-      { "id": "ressources", "label": "Mobilisation de ressources" },
-      { "id": "transparence", "label": "Transparence financière" },
-      { "id": "depenses", "label": "Gestion des dépenses" },
-      { "id": "soutien", "label": "Soutien financier aux étudiants" },
-      { "id": "budget", "label": "Optimisation du budget des activités" },
-      { "id": "autres", "label": "Autres propositions" }
+      {
+        "id": "cotisations",
+        "label": "Cotisations"
+      },
+      {
+        "id": "budget",
+        "label": "Budget"
+      },
+      {
+        "id": "sponsoring-et-partenaires",
+        "label": "Sponsoring et partenaires"
+      },
+      {
+        "id": "transparence",
+        "label": "Transparence"
+      },
+      {
+        "id": "mobilisation-de-ressources",
+        "label": "Mobilisation de ressources"
+      },
+      {
+        "id": "gestion-des-depenses",
+        "label": "Gestion des dépenses"
+      },
+      {
+        "id": "soutien-aux-etudiants",
+        "label": "Soutien aux étudiants"
+      },
+      {
+        "id": "autre-idee",
+        "label": "Autre idée"
+      }
     ],
-    "extraFields": [
-      { "key": "impact", "label": "Impact financier attendu", "placeholder": "Économies, recettes supplémentaires, meilleure traçabilité…", "type": "text" }
-    ]
+    "extraFields": []
   },
   {
     "slug": "coordination",
@@ -131,17 +246,39 @@
     "image": "/images/coordination.jpg",
     "imageAlt": "Groupe d'élèves ingénieurs de l'EPT en uniforme",
     "categories": [
-      { "id": "fonctionnement", "label": "Fonctionnement général de la COM5" },
-      { "id": "communication", "label": "Communication avec la promotion" },
-      { "id": "inter-commissions", "label": "Coordination entre les commissions" },
-      { "id": "administration", "label": "Collaboration avec l'administration" },
-      { "id": "anciens", "label": "Relations avec les anciens et partenaires" },
-      { "id": "organisation", "label": "Organisation générale de la dernière année" },
-      { "id": "participation", "label": "Participation des étudiants" },
-      { "id": "autres", "label": "Autres recommandations" }
+      {
+        "id": "communication",
+        "label": "Communication"
+      },
+      {
+        "id": "organisation-generale",
+        "label": "Organisation générale"
+      },
+      {
+        "id": "fonctionnement-de-la-com5",
+        "label": "Fonctionnement de la COM5"
+      },
+      {
+        "id": "collaboration-entre-commissions",
+        "label": "Collaboration entre commissions"
+      },
+      {
+        "id": "relations-avec-l-administration",
+        "label": "Relations avec l'administration"
+      },
+      {
+        "id": "anciens-et-partenaires",
+        "label": "Anciens et partenaires"
+      },
+      {
+        "id": "participation-des-etudiants",
+        "label": "Participation des étudiants"
+      },
+      {
+        "id": "autre-idee",
+        "label": "Autre idée"
+      }
     ],
-    "extraFields": [
-      { "key": "acteurs", "label": "Acteurs concernés", "placeholder": "Commissions, administration, anciens, délégués…", "type": "text" }
-    ]
+    "extraFields": []
   }
 ]

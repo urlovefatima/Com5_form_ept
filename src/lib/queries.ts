@@ -29,6 +29,7 @@ function mapRow(r: any): ProposalRow {
 
 export type ListFilters = {
   commission?: string;
+  category?: string;
   q?: string;
   sort?: "asc" | "desc";
   identity?: "all" | "anonymous" | "identified";
@@ -39,6 +40,7 @@ export async function listProposals(f: ListFilters = {}): Promise<ProposalRow[]>
   const where: string[] = [];
   const params: unknown[] = [];
   if (f.commission) { params.push(f.commission); where.push(`p.commission_slug = $${params.length}`); }
+  if (f.category) { params.push(f.category); where.push(`p.category_id = $${params.length}`); }
   if (f.identity === "anonymous") where.push("s.is_anonymous = true");
   if (f.identity === "identified") where.push("s.is_anonymous = false");
   if (f.q && f.q.trim()) {

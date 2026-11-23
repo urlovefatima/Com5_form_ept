@@ -4,7 +4,7 @@ import {
   Paragraph, ShadingType, Table, TableCell, TableRow, TextRun, WidthType,
 } from "docx";
 import type { Commission, ProposalRow } from "./types";
-import { authorLabel, budgetLabel, formatDate } from "./format";
+import { authorLabel, formatDate } from "./format";
 
 const NAVY = "0B2545";
 const BLUE = "1D4E89";
@@ -31,10 +31,8 @@ function field(label: string, value?: string | null) {
 
 function metaTable(p: ProposalRow) {
   const cells: [string, string][] = [
-    ["Catégorie", p.categoryLabel],
+    ["Thème", p.categoryLabel],
     ["Auteur", authorLabel(p) + (p.department ? ` · ${p.department}` : "")],
-    ["Budget estimatif", budgetLabel(p.budgetType, p.budgetAmount)],
-    ["Période souhaitée", p.period?.trim() || "Non précisée"],
     ["Reçue le", formatDate(p.createdAt)],
   ];
   const border = { style: BorderStyle.SINGLE, size: 4, color: "D6DEEA" };
@@ -107,7 +105,7 @@ function commissionSection(c: Commission | undefined, slug: string, rows: Propos
     out.push(new Paragraph({ children: [run("Aucune proposition reçue pour le moment.", { italics: true, color: MUTED })] }));
     return out;
   }
-  out.push(new Paragraph({ spacing: { before: 120, after: 60 }, children: [run("Répartition par catégorie", { bold: true, color: NAVY })] }));
+  out.push(new Paragraph({ spacing: { before: 120, after: 60 }, children: [run("Répartition par thème", { bold: true, color: NAVY })] }));
   out.push(...categorySummary(rows));
   rows.forEach((r, i) => out.push(...proposalBlock(r, i + 1, c)));
   return out;

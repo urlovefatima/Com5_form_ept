@@ -1,7 +1,7 @@
 import "server-only";
 import PDFDocument from "pdfkit";
 import type { Commission, ProposalRow } from "./types";
-import { authorLabel, budgetLabel, formatDate } from "./format";
+import { authorLabel, formatDate } from "./format";
 
 const NAVY = "#0B2545";
 const BLUE = "#1D4E89";
@@ -60,8 +60,6 @@ export async function buildPdf(opts: { commissions: Commission[]; rows: Proposal
       doc.moveDown(0.5).font("Helvetica-Bold").fontSize(13).fillColor(GOLD).text(`${i + 1}. `, { continued: true }).fillColor(NAVY).text(safe(p.title));
       doc.moveDown(0.25).font("Helvetica").fontSize(8.5).fillColor(MUTED).text(safe(
         `${p.categoryLabel}  ·  ${authorLabel(p)}${p.department ? " · " + p.department : ""}  ·  ${formatDate(p.createdAt)}`));
-      doc.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(safe(
-        `Budget : ${budgetLabel(p.budgetType, p.budgetAmount)}  ·  Période : ${p.period?.trim() || "non précisée"}`));
       field("Description détaillée", p.description);
       field("Objectif", p.objective);
       field("Organisation proposée", p.organization);
