@@ -65,13 +65,14 @@ export async function POST(req: Request) {
       );
     }
     await client.query("commit");
-    await recordEvent("submit", ipHash);
-    return NextResponse.json({ ok: true, proposals: data.proposals.length }, { status: 201 });
   } catch (e) {
     await client.query("rollback").catch(() => {});
     console.error("[contributions] insert failed", e);
     return NextResponse.json({ error: "Erreur serveur lors de l'enregistrement." }, { status: 500 });
   } finally {
-    client.release();
+    client.release(); // libérer AVANT toute autre requête (pool d'une seule connexion sur Vercel)
   }
+  // Journal anti-spam : un échec ici ne doit jamais faire croire que l'envoi a échoué
+  await recordEvent("submit", ipHash).catch((e) => console.error("[contributions] rate log failed", e));
+  return NextResponse.json({ ok: true, proposals: data.proposals.length }, { status: 201 });
 }
